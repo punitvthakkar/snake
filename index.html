@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Snake Game - Cursed Slithers</title>
+    <style>
+        /* --- Reset & Base Styles --- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #1a1a2e, #16213e); /* Dark space blue gradient */
+            color: #e0e0e0; /* Light grey text */
+            overflow: hidden; /* Prevent scrollbars */
+        }
+
+        /* --- Game Container & Layout --- */
+        .game-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #0f3460; /* Dark blue container */
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+            position: relative; /* Needed for overlay positioning */
+            width: 448px; /* Canvas width (400) + padding (2*20) + border (2*4)*/
+        }
+
+        .game-header {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding: 0 5px; /* Align title/score with canvas edges */
+        }
+
+        .game-title {
+            font-size: 26px; /* Slightly adjusted size */
+            font-weight: bold;
+            color: #e94560; /* Bright pink/red */
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        /* --- Score Display --- */
+        .score-container {
+            display: flex;
+            flex-direction: column;
+            gap: 4px; /* Reduced gap */
+        }
+
+        .score-item {
+            font-size: 14px; /* Slightly smaller */
+            font-weight: bold;
+            color: #fff;
+            background-color: #1a1a2e; /* Dark background for score boxes */
+            padding: 5px 10px; /* Adjusted padding */
+            border-radius: 15px;
+            text-align: right;
+            min-width: 130px; /* Ensure consistent width */
+            white-space: nowrap; /* Prevent wrapping */
+        }
+        .score-item span {
+            display: inline-block;
+            min-width: 20px; /* Space for score number */
+            text-align: right;
+        }
+
+        .current-score span { color: #4ecca3; } /* Green current score number */
+        .session-highscore span { color: #f9d56e; } /* Yellow session score number */
+        .lifetime-highscore span { color: #ff9e7d; } /* Orange lifetime score number */
+
+        /* --- Canvas --- */
+        #gameCanvas {
+            border: 4px solid #e94560; /* Pink/red border */
+            border-radius: 5px;
+            background-color: #1a1a2e; /* Dark canvas background */
+            display: block; /* Prevent extra space */
+        }
+
+        /* --- Overlays (Start & Game Over) --- */
+        .overlay {
+            position: absolute;
+            top: 20px; /* Align with game-container padding */
+            left: 20px;
+            width: calc(100% - 40px); /* Match container padding */
+            height: calc(100% - 40px);
+            background-color: rgba(15, 52, 96, 0.85); /* Semi-transparent dark blue */
+            border-radius: 10px;
+            display: flex; /* Use flexbox for centering content */
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+            backdrop-filter: blur(3px);
+            padding: 20px;
+            text-align: center;
+            box-sizing: border-box;
+        }
+
+        #startScreen { display: flex; } /* Start screen visible initially */
+        #gameOverOverlay { display: none; } /* Game over hidden initially */
+
+        .overlay-content {
+             background-color: rgba(22, 33, 62, 0.9); /* Slightly darker content box */
+             padding: 25px;
+             border-radius: 10px;
+             border: 2px solid #e94560;
+             box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+             max-width: 90%;
+        }
+
+         /* Specific title styling */
+        #startScreen h2 { color: #4ecca3; font-size: 28px; margin-bottom: 15px; } /* Green title */
+        #gameOverOverlay h2 { color: #e94560; font-size: 32px; margin-bottom: 15px; } /* Red title */
+
+        /* Story & Instructions Styling */
+         .overlay .snake-story {
+            background-color: transparent; /* No extra background needed */
+            border-left: none;
+            padding: 0;
+            margin: 0 0 15px 0; /* Space below story */
+            text-align: left;
+            font-size: 14px;
+            line-height: 1.5;
+            color: #c0c0c0; /* Lighter grey for story */
+         }
+         .overlay .snake-story h3 {
+             color: #f9d56e; /* Yellow story title */
+             font-size: 18px;
+             margin-bottom: 8px;
+             text-align: center;
+         }
+        .overlay .instructions {
+            font-size: 14px;
+            margin-top: 15px;
+            color: #e0e0e0;
+        }
+         .overlay .instructions strong {
+             color: #f9d56e; /* Yellow highlight for keys */
+             font-weight: bold;
+         }
+
+        /* Final Score Styling */
+        #finalScoreDisplay {
+            margin-bottom: 20px;
+            font-size: 20px;
+            color: #fff;
+        }
+         #finalScoreDisplay span {
+             color: #4ecca3; /* Green final score number */
+             font-weight: bold;
+             font-size: 22px;
+         }
+
+        /* --- Buttons --- */
+        button {
+            background-color: #e94560; /* Pink/red */
+            border: none;
+            color: white;
+            padding: 10px 20px; /* Slightly smaller padding */
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin-top: 15px; /* Space above button */
+            cursor: pointer;
+            border-radius: 25px;
+            transition: all 0.3s ease;
+            font-weight: bold;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        button:hover {
+            background-color: #ff647f; /* Lighter pink/red on hover */
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+        }
+        button:active {
+            transform: translateY(1px);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <div class="game-header">
+            <h1 class="game-title">Cursed Slithers</h1>
+            <div class="score-container">
+                <div class="score-item current-score">Score: <span id="score">0</span></div>
+                <div class="score-item session-highscore">Session Best: <span id="sessionHighscore">0</span></div>
+                <div class="score-item lifetime-highscore">All-Time Best: <span id="lifetimeHighscore">0</span></div>
+            </div>
+        </div>
+
+        <canvas id="gameCanvas" width="400" height="400"></canvas>
+
+        <div id="startScreen" class="overlay">
+            <div class="overlay-content">
+                <h2>Welcome to Cursed Slithers!</h2>
+                <div class="snake-story">
+                    <h3>The Curse of the Hungry Snake</h3>
+                    <p>Long ago, there lived a snake named Slithers who was always hungry. One day, he slithered into a forbidden garden and ate a magical fruit despite the warning signs.</p>
+                    <p>The garden's keeper, an old wizard, appeared and cursed Slithers: "Like Pinocchio's nose grew with lies, your body shall grow with every bite you take!"</p>
+                    <p>Now Slithers must navigate his ever-growing body while satisfying his endless hunger. Can you help him survive his curse?</p>
+                </div>
+                <p class="instructions">
+                    Use <strong>Arrow Keys</strong> or <strong>W/A/S/D</strong> to move.<br>
+                    Eat the green gems (💎) to score & grow.<br>
+                    Avoid the walls and your own tail!
+                </p>
+                <p class="instructions" style="margin-top: 20px;">Press <strong>Enter</strong> to Start!</p>
+            </div>
+        </div>
+
+        <div id="gameOverOverlay" class="overlay">
+            <div class="overlay-content">
+                <h2>Game Over!</h2>
+                <p id="finalScoreDisplay">Your Score: <span id="finalScore">0</span></p>
+                <p class="instructions">Press <strong>Enter</strong> or click the button below.</p>
+                <button id="restartButton">Play Again</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- DOM Elements ---
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const scoreElement = document.getElementById('score');
+        const sessionHighscoreElement = document.getElementById('sessionHighscore');
+        const lifetimeHighscoreElement = document.getElementById('lifetimeHighscore');
+        const startScreen = document.getElementById('startScreen');
+        const gameOverOverlay = document.getElementById('gameOverOverlay');
+        const finalScoreElement = document.getElementById('finalScore');
+        const restartButton = document.getElementById('restartButton');
+
+        // --- Game Constants ---
+        const gridSize = 20; // Size of each grid cell and snake segment
+        const canvasSize = canvas.width; // Assumes square canvas
+        const gridWidth = canvasSize / gridSize; // Number of cells horizontally
+        const gridHeight = canvasSize / gridSize; // Number of cells vertically
+        const LIFETIME_HS_KEY = 'snakeLifetimeHighScore_v2'; // Unique key for localStorage
+
+        // --- Game State Variables ---
+        let snake;          // Array of {x, y} objects (in grid coordinates)
+        let food;           // {x, y} object (in grid coordinates)
+        let score;
+        let direction;      // Current direction ('up', 'down', 'left', 'right')
+        let nextDirection;  // Queued direction from input
+        let gameSpeed;      // Milliseconds between updates
+        let gameLoopTimeout;
+        let isGameOver;
+        let isGameStarted;
+        let changingDirection; // Lock to prevent multiple direction changes per tick
+
+        // --- High Score Variables ---
+        let sessionHighScore = 0;
+        let lifetimeHighScore = 0;
+
+        // --- Speed Control ---
+        const initialSpeed = 160; // Start slightly slower
+        const speedDecrement = 4;   // How much to decrease interval per food item
+        const minSpeed = 55;      // Fastest interval
+
+        // --- Initialization ---
+        function initGame() {
+            // Initial snake position (grid coordinates)
+            const startX = Math.floor(gridWidth / 4);
+            const startY = Math.floor(gridHeight / 2);
+            snake = [
+                { x: startX, y: startY },
+                { x: startX - 1, y: startY },
+                { x: startX - 2, y: startY }
+            ];
+
+            food = generateFoodLocation();
+            score = 0;
+            direction = 'right';
+            nextDirection = 'right';
+            gameSpeed = initialSpeed;
+            isGameOver = false;
+            isGameStarted = true;
+            changingDirection = false; // Reset direction lock
+
+            // Update UI
+            scoreElement.textContent = score;
+            startScreen.style.display = 'none';
+            gameOverOverlay.style.display = 'none';
+
+            // Clear previous loop and start new one
+            if (gameLoopTimeout) clearTimeout(gameLoopTimeout);
+            updateHighScoreDisplay(); // Refresh display
+            mainLoop();
+        }
+
+        // --- Game Loop ---
+        function mainLoop() {
+            if (isGameOver) {
+                showGameOver();
+                return;
+            }
+
+            changingDirection = false; // Allow direction change for next tick
+
+            gameLoopTimeout = setTimeout(() => {
+                clearCanvas();
+                updateDirection();
+                moveSnake();
+                if (isGameOver) { // Check collision result from moveSnake
+                    showGameOver();
+                    return;
+                }
+                checkFoodCollision();
+                draw();
+                mainLoop(); // Schedule next iteration
+            }, gameSpeed);
+        }
+
+        // --- Drawing Functions ---
+        function clearCanvas() {
+            ctx.fillStyle = '#1a1a2e'; // Canvas background
+            ctx.fillRect(0, 0, canvasSize, canvasSize);
+        }
+
+        // Draw the snake and food
+        function draw() {
+            // Draw snake
+            snake.forEach((segment, index) => {
+                const pixelX = segment.x * gridSize;
+                const pixelY = segment.y * gridSize;
+
+                // Head is a different color
+                if (index === 0) {
+                    ctx.fillStyle = '#e94560'; // Red head
+                } else {
+                    // Gradient for body (simple version)
+                    const greenValue = Math.max(60, 200 - (index * 10)); // Brighter towards head
+                    ctx.fillStyle = `rgb(78, ${greenValue}, 163)`; // Greenish-blue body
+                }
+
+                // Draw rounded rectangle for snake segments
+                roundRect(ctx, pixelX, pixelY, gridSize - 1, gridSize - 1, 5, true);
+
+                // Draw eyes on head
+                if (index === 0) {
+                    drawEyes(segment, pixelX, pixelY);
+                }
+            });
+
+            // Draw food (as a gem/circle)
+            ctx.fillStyle = '#4ecca3'; // Green for food
+            ctx.beginPath();
+            const centerX = food.x * gridSize + gridSize / 2;
+            const centerY = food.y * gridSize + gridSize / 2;
+            const radius = gridSize / 2 - 2;
+            ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Add shine to food
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+            ctx.beginPath();
+            ctx.arc(centerX - radius / 3, centerY - radius / 3, radius / 3.5, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        function drawEyes(segment, pixelX, pixelY) {
+             ctx.fillStyle = 'white';
+             const eyeSize = gridSize / 6;
+             const eyeOffset = gridSize / 4; // Distance from edge
+
+             let eye1X, eye1Y, eye2X, eye2Y;
+
+             // Calculate eye positions based on direction
+             switch (direction) {
+                case 'up':
+                    eye1X = pixelX + eyeOffset;
+                    eye1Y = pixelY + eyeOffset;
+                    eye2X = pixelX + gridSize - eyeOffset - eyeSize*2; // Adjust for eye size
+                    eye2Y = pixelY + eyeOffset;
+                    break;
+                case 'down':
+                    eye1X = pixelX + eyeOffset;
+                    eye1Y = pixelY + gridSize - eyeOffset - eyeSize*2;
+                    eye2X = pixelX + gridSize - eyeOffset - eyeSize*2;
+                    eye2Y = pixelY + gridSize - eyeOffset - eyeSize*2;
+                    break;
+                case 'left':
+                    eye1X = pixelX + eyeOffset;
+                    eye1Y = pixelY + eyeOffset;
+                    eye2X = pixelX + eyeOffset;
+                    eye2Y = pixelY + gridSize - eyeOffset - eyeSize*2;
+                    break;
+                case 'right':
+                    eye1X = pixelX + gridSize - eyeOffset - eyeSize*2;
+                    eye1Y = pixelY + eyeOffset;
+                    eye2X = pixelX + gridSize - eyeOffset - eyeSize*2;
+                    eye2Y = pixelY + gridSize - eyeOffset - eyeSize*2;
+                    break;
+             }
+
+             // Draw eye whites (using roundRect for consistency)
+             roundRect(ctx, eye1X, eye1Y, eyeSize*2, eyeSize*2, eyeSize, true);
+             roundRect(ctx, eye2X, eye2Y, eyeSize*2, eyeSize*2, eyeSize, true);
+
+            // Draw pupils (small black dots)
+            ctx.fillStyle = 'black';
+             roundRect(ctx, eye1X + eyeSize/2, eye1Y + eyeSize/2, eyeSize, eyeSize, eyeSize/2, true);
+             roundRect(ctx, eye2X + eyeSize/2, eye2Y + eyeSize/2, eyeSize, eyeSize, eyeSize/2, true);
+        }
+
+
+        // Helper function to draw rounded rectangles
+        function roundRect(ctx, x, y, width, height, radius, fill) {
+            if (typeof radius === 'undefined') radius = 5;
+            ctx.beginPath();
+            ctx.moveTo(x + radius, y);
+            ctx.lineTo(x + width - radius, y);
+            ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+            ctx.lineTo(x + width, y + height - radius);
+            ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+            ctx.lineTo(x + radius, y + height);
+            ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+            ctx.lineTo(x, y + radius);
+            ctx.quadraticCurveTo(x, y, x + radius, y);
+            ctx.closePath();
+            if (fill) ctx.fill();
+            else ctx.stroke();
+        }
+
+        // --- Movement and Logic ---
+         function updateDirection() {
+             // Only update the actual direction if it's not the opposite
+             const opposite = { 'up': 'down', 'down': 'up', 'left': 'right', 'right': 'left' };
+             if (direction !== opposite[nextDirection]) {
+                 direction = nextDirection;
+             }
+         }
+
+        function moveSnake() {
+            const head = { x: snake[0].x, y: snake[0].y };
+
+            // Move head based on the *final* direction for this tick
+            switch (direction) {
+                case 'up': head.y--; break;
+                case 'down': head.y++; break;
+                case 'left': head.x--; break;
+                case 'right': head.x++; break;
+            }
+
+             // Check for collisions *before* adding head/removing tail
+             if (checkCollision(head)) {
+                 isGameOver = true; // Set flag, handled in mainLoop
+                 return;
+             }
+
+            // Add new head
+            snake.unshift(head);
+
+            // Remove tail *unless* food was just eaten (handled in checkFoodCollision)
+             const ateFood = head.x === food.x && head.y === food.y;
+             if (!ateFood) {
+                 snake.pop();
+             }
+        }
+
+        function checkCollision(head) {
+            // Wall collision
+            if (head.x < 0 || head.x >= gridWidth || head.y < 0 || head.y >= gridHeight) {
+                return true;
+            }
+            // Self collision (check against segments starting from index 1)
+            for (let i = 1; i < snake.length; i++) {
+                if (head.x === snake[i].x && head.y === snake[i].y) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        function checkFoodCollision() {
+             const head = snake[0];
+             if (head.x === food.x && head.y === food.y) {
+                 // Increase score
+                 score += 10;
+                 scoreElement.textContent = score;
+
+                 // Generate new food
+                 food = generateFoodLocation();
+
+                 // Increase speed
+                 increaseSpeed();
+                // Note: Tail is *not* popped this tick because food was eaten (handled in moveSnake)
+             }
+         }
+
+        function generateFoodLocation() {
+            let newFoodPos;
+            do {
+                newFoodPos = {
+                    x: Math.floor(Math.random() * gridWidth),
+                    y: Math.floor(Math.random() * gridHeight)
+                };
+            } while (isLocationOnSnake(newFoodPos)); // Ensure food isn't on the snake
+            return newFoodPos;
+        }
+
+        function isLocationOnSnake(pos) {
+            return snake.some(segment => segment.x === pos.x && segment.y === pos.y);
+        }
+
+        function increaseSpeed() {
+            if (gameSpeed > minSpeed) {
+                gameSpeed = Math.max(minSpeed, gameSpeed - speedDecrement);
+                // No need to clearInterval/setInterval with setTimeout approach
+            }
+        }
+
+        // --- Input Handling ---
+        function handleKeyPress(event) {
+            const key = event.key;
+
+            // Start/Restart Game with Enter
+            if ((!isGameStarted || isGameOver) && key === 'Enter') {
+                event.preventDefault(); // Prevent default browser actions
+                initGame();
+                return;
+            }
+
+            // Game Controls (only if game is running)
+            if (!isGameStarted || isGameOver || changingDirection) {
+                return; // Ignore input if game not running or already changing dir
+            }
+
+            const opposite = { 'up': 'down', 'down': 'up', 'left': 'right', 'right': 'left' };
+
+            // Set nextDirection based on input, preventing immediate reversal
+            if ((key === 'ArrowUp' || key.toLowerCase() === 'w') && direction !== 'down') {
+                 nextDirection = 'up';
+                 changingDirection = true;
+            } else if ((key === 'ArrowDown' || key.toLowerCase() === 's') && direction !== 'up') {
+                 nextDirection = 'down';
+                 changingDirection = true;
+            } else if ((key === 'ArrowLeft' || key.toLowerCase() === 'a') && direction !== 'right') {
+                 nextDirection = 'left';
+                 changingDirection = true;
+            } else if ((key === 'ArrowRight' || key.toLowerCase() === 'd') && direction !== 'left') {
+                 nextDirection = 'right';
+                 changingDirection = true;
+            }
+
+            if(changingDirection) {
+                event.preventDefault(); // Prevent scrolling with arrow keys during gameplay
+            }
+        }
+
+        // --- High Score Logic ---
+        function loadHighScores() {
+            const storedLifetimeScore = localStorage.getItem(LIFETIME_HS_KEY);
+            lifetimeHighScore = storedLifetimeScore ? parseInt(storedLifetimeScore, 10) : 0;
+            sessionHighScore = 0; // Session score always resets on load
+            updateHighScoreDisplay();
+        }
+
+        function updateHighScoreDisplay() {
+            sessionHighscoreElement.textContent = sessionHighScore;
+            lifetimeHighscoreElement.textContent = lifetimeHighScore;
+        }
+
+        function saveLifetimeHighScore() {
+            localStorage.setItem(LIFETIME_HS_KEY, lifetimeHighScore.toString());
+        }
+
+        // --- Game Over ---
+        function showGameOver() {
+            clearTimeout(gameLoopTimeout); // Stop the game loop
+            isGameStarted = false; // Mark game as not running
+
+            // Update High Scores
+            if (score > sessionHighScore) {
+                sessionHighScore = score;
+            }
+            if (score > lifetimeHighScore) {
+                lifetimeHighScore = score;
+                saveLifetimeHighScore();
+            }
+
+            // Update UI
+            updateHighScoreDisplay();
+            finalScoreElement.textContent = score;
+            gameOverOverlay.style.display = 'flex';
+        }
+
+        // --- Event Listeners ---
+        document.addEventListener('keydown', handleKeyPress);
+        restartButton.addEventListener('click', initGame); // Button still works
+
+        // --- Initial Setup on Page Load ---
+        window.onload = () => {
+            isGameStarted = false; // Ensure game doesn't start automatically
+            isGameOver = false;
+            loadHighScores();
+            startScreen.style.display = 'flex'; // Show instructions first
+            gameOverOverlay.style.display = 'none';
+            clearCanvas(); // Draw initial empty board
+        };
+
+    </script>
+</body>
+</html>
