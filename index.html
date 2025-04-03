@@ -103,6 +103,7 @@
             height: auto;
             width: 400px; /* Fixed size for game logic */
             height: 400px; /* Fixed size for game logic */
+            margin-bottom: 5px; /* Add slight space before controls if they appear */
         }
 
         /* --- Overlays (Start & Game Over) --- */
@@ -208,51 +209,52 @@
             }
         }
 
-        /* --- On-Screen Tap Controls --- */
+        /* --- On-Screen Tap Controls (UPDATED STYLES) --- */
         #tapControls {
-            display: none; /* Hidden by default */
+            /* display: none; /* Controlled by JS */
             width: 100%;
-            max-width: 250px; /* Limit width */
-            margin-top: 15px; /* Space above controls */
-            padding: 10px;
-            background-color: rgba(15, 52, 96, 0.7); /* Semi-transparent background */
+            max-width: 240px; /* Increased max-width */
+            margin: 10px auto 0 auto; /* Centered margin */
+            padding: 5px; /* Reduced padding slightly */
+            /* background-color: rgba(15, 52, 96, 0.7); Removed background */
             border-radius: 10px;
-            /* Use Grid for layout */
-            display: grid;
+            display: grid; /* Keep using Grid */
             grid-template-columns: repeat(3, 1fr);
-            grid-template-rows: repeat(3, auto);
-            gap: 5px;
+            grid-template-rows: repeat(3, auto); /* Rows adjust to content */
+            gap: 8px; /* Increased gap slightly */
             justify-items: center;
             align-items: center;
         }
 
         .tap-button {
-            width: 55px;
-            height: 55px;
-            background-color: #e94560;
+            width: 65px;  /* Increased size */
+            height: 65px; /* Increased size */
+            background-color: #e94560; /* Uniform color */
             color: white;
             border: none;
-            border-radius: 50%; /* Make them round */
-            font-size: 24px; /* Larger arrow */
+            border-radius: 50%; /* Keep round */
+            font-size: 30px; /* Increased arrow size */
             font-weight: bold;
             cursor: pointer;
             display: flex;
             justify-content: center;
             align-items: center;
-            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
-            user-select: none; /* Prevent text selection on tap */
-            transition: background-color 0.1s ease;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); /* Slightly larger shadow */
+            user-select: none;
+            transition: background-color 0.1s ease, transform 0.05s ease; /* Added transform transition */
         }
         .tap-button:active {
-            background-color: #ff647f;
+            background-color: #ff647f; /* Keep active color */
+            transform: scale(0.95); /* Add slight scale down on tap */
         }
 
-        /* Grid positioning for buttons */
+        /* Correct Grid positioning for buttons */
         #tapUp { grid-column: 2; grid-row: 1; }
         #tapLeft { grid-column: 1; grid-row: 2; }
+        /* Center space - can be left empty */
+        /* #tapPlaceholder { grid-column: 2; grid-row: 2; } */
         #tapRight { grid-column: 3; grid-row: 2; }
-        #tapDown { grid-column: 2; grid-row: 2; background-color: #1f2c4a; } /* Center button - could be removed or used differently */
-        #tapDown { grid-column: 2; grid-row: 3; } /* Corrected position for Down */
+        #tapDown { grid-column: 2; grid-row: 3; } /* Correct row */
 
 
         /* Final Score Styling */
@@ -308,8 +310,8 @@
                  padding: 10px;
                  width: calc(100vw - 20px);
             }
-            /* Make canvas slightly smaller on very small screens if needed */
-            /* #gameCanvas { width: 320px; height: 320px; } */
+            /* Adjust canvas size if needed for very small screens */
+            /* #gameCanvas { width: 300px; height: 300px; } */
 
             .game-title { font-size: 20px; }
             .score-item { font-size: 12px; padding: 3px 6px;}
@@ -326,9 +328,19 @@
              .control-option-button { padding: 7px 13px; font-size: 13px; }
 
              /* Adjust tap controls for small screens */
-             #tapControls { max-width: 200px; }
-             .tap-button { width: 45px; height: 45px; font-size: 20px; }
+             #tapControls {
+                 max-width: 210px; /* Slightly smaller max-width */
+                 gap: 6px; /* Slightly smaller gap */
+                 margin-top: 8px; /* Reduce top margin */
+             }
+             .tap-button {
+                 width: 55px; /* Slightly smaller buttons */
+                 height: 55px;
+                 font-size: 26px; /* Slightly smaller font */
+             }
         }
+         /* Ensure tap controls are hidden initially via JS/inline style if needed */
+         /* The JS already handles this display logic */
 
     </style>
 </head>
@@ -345,12 +357,11 @@
 
         <canvas id="gameCanvas" width="400" height="400"></canvas>
 
-        <!-- On-Screen Tap Controls (Initially Hidden) -->
-        <div id="tapControls">
+        <!-- On-Screen Tap Controls (Initially Hidden, layout corrected) -->
+        <div id="tapControls" style="display: none;"> {/* Start hidden */}
             <button id="tapUp" class="tap-button">↑</button>
             <button id="tapLeft" class="tap-button">←</button>
-            <!-- Optional: Center placeholder or leave empty
-                 <div style="grid-column: 2; grid-row: 2;"></div> -->
+            {/* Intentionally empty middle cell */}
             <button id="tapRight" class="tap-button">→</button>
             <button id="tapDown" class="tap-button">↓</button>
         </div>
@@ -366,7 +377,7 @@
                      <p>Now Slithers must navigate his ever-growing body while satisfying his endless hunger. Can you help him survive his curse?</p>
                 </div>
                 <p class="instructions">
-                    Eat the green gems (<span style="color:#4ecca3">●</span>) to score & grow.<br>
+                    Eat the green gems (<span style="color:#4ecca3; font-weight:bold;">●</span>) to score & grow.<br> {/* Made food symbol bolder */}
                     Avoid the walls and your own tail!
                 </p>
                 <p class="instructions desktop-instructions">
@@ -413,7 +424,7 @@
         const gameOverOverlay = document.getElementById('gameOverOverlay');
         const finalScoreElement = document.getElementById('finalScore');
         const restartButton = document.getElementById('restartButton');
-        const startButton = document.getElementById('startButton'); // New start button
+        const startButton = document.getElementById('startButton');
         const mobileControlSelection = document.getElementById('mobileControlSelection');
         const selectSwipeButton = document.getElementById('selectSwipe');
         const selectTapButton = document.getElementById('selectTap');
@@ -425,10 +436,10 @@
 
         // --- Game Constants ---
         const gridSize = 20;
-        const canvasSize = canvas.width;
+        const canvasSize = canvas.width; // Assumes square canvas
         const gridWidth = canvasSize / gridSize;
         const gridHeight = canvasSize / gridSize;
-        const LIFETIME_HS_KEY = 'snakeLifetimeHighScore_v3'; // Increment version if structure changes
+        const LIFETIME_HS_KEY = 'snakeLifetimeHighScore_v3';
         const MOBILE_CONTROL_PREF_KEY = 'snakeMobileControlPref_v1';
 
         // --- Game State Variables ---
@@ -442,43 +453,36 @@
         let isGameOver;
         let isGameStarted;
         let changingDirection;
-        let isMobile = false; // Flag for mobile device detection
-        let mobileControlPreference = null; // 'swipe', 'tap', or null
+        let isMobile = false;
+        let mobileControlPreference = null; // 'swipe', 'tap'
 
         // --- High Score Variables ---
         let sessionHighScore = 0;
         let lifetimeHighScore = 0;
 
         // --- Speed Control ---
-        const initialSpeed = 160;
-        const speedDecrement = 4;
-        const minSpeed = 55;
+        const initialSpeed = 160; // Milliseconds per frame
+        const speedDecrement = 4;  // How much to decrease delay per food item
+        const minSpeed = 55;       // Fastest speed (minimum delay)
 
         // --- Touch Control Variables (for Swipe) ---
         let touchStartX = 0;
         let touchStartY = 0;
         let touchEndX = 0;
         let touchEndY = 0;
-        const minSwipeDistance = 30;
+        const minSwipeDistance = 30; // Minimum pixels for a swipe gesture
 
         // --- Utility Functions ---
         function isMobileDevice() {
-             // Prefer checking for touch capability & coarse pointer over userAgent sniffing
-             let hasTouch = false;
-             if ('ontouchstart' in window || navigator.maxTouchPoints > 0 || navigator.msMaxTouchPoints > 0) {
-                 hasTouch = true;
-             }
-             // Check for coarse pointer (indicative of touch screen)
+             let hasTouch = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0) || (navigator.msMaxTouchPoints > 0);
              const hasCoarsePointer = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
-
-             // Consider it mobile if it has touch OR a coarse pointer
-             // return hasTouch || hasCoarsePointer;
-             // Stricter: require both for less chance of activating on touch laptops? Or just coarse? Let's try coarse.
-             return hasCoarsePointer;
+             // Prioritize coarse pointer as a strong indicator of touch-primary devices
+             return hasCoarsePointer || hasTouch;
         }
 
         // --- Initialization ---
         function initGame() {
+            // Reset game state
             const startX = Math.floor(gridWidth / 4);
             const startY = Math.floor(gridHeight / 2);
             snake = [
@@ -486,16 +490,16 @@
                 { x: startX - 1, y: startY },
                 { x: startX - 2, y: startY }
             ];
-
             food = generateFoodLocation();
             score = 0;
-            direction = 'right';
-            nextDirection = 'right';
+            direction = 'right'; // Initial direction
+            nextDirection = 'right'; // Buffer for next move
             gameSpeed = initialSpeed;
             isGameOver = false;
             isGameStarted = true;
-            changingDirection = false;
+            changingDirection = false; // Input lock per tick
 
+            // Update UI
             scoreElement.textContent = score;
             startScreen.style.display = 'none';
             gameOverOverlay.style.display = 'none';
@@ -507,77 +511,82 @@
                 tapControlsContainer.style.display = 'none';
             }
 
+            // Clear previous game loop timeout if any
             if (gameLoopTimeout) clearTimeout(gameLoopTimeout);
-            updateHighScoreDisplay();
-            mainLoop();
+            updateHighScoreDisplay(); // Ensure scores are current
+            mainLoop(); // Start the game loop
         }
 
         // --- Game Loop ---
         function mainLoop() {
             if (isGameOver) {
-                showGameOver();
+                showGameOver(); // End loop and show overlay if game over
                 return;
             }
 
-            changingDirection = false; // Allow direction change for the next tick
+            changingDirection = false; // Reset input lock for this tick
 
+            // Schedule the next frame
             gameLoopTimeout = setTimeout(() => {
-                clearCanvas();
-                updateDirection();
-                moveSnake();
-                if (isGameOver) { // Check again after moving
+                clearCanvas();         // Clear previous frame
+                updateDirection();     // Process buffered input
+                moveSnake();           // Move snake & check collisions/food
+                if (isGameOver) {      // Check again after moving
                     showGameOver();
                     return;
                 }
-                checkFoodCollision();
-                draw();
-                mainLoop();
+                // checkFoodCollision(); // Now handled within moveSnake
+                draw();                // Draw current game state
+                mainLoop();            // Schedule next iteration
             }, gameSpeed);
         }
 
         // --- Drawing Functions ---
         function clearCanvas() {
-            ctx.fillStyle = '#1a1a2e';
+            ctx.fillStyle = '#1a1a2e'; // Background color matching theme
             ctx.fillRect(0, 0, canvasSize, canvasSize);
         }
 
         function draw() {
-            // Draw snake
+            // Draw snake segments
             snake.forEach((segment, index) => {
                 const pixelX = segment.x * gridSize;
                 const pixelY = segment.y * gridSize;
+                let segmentColor;
 
                 if (index === 0) {
-                    ctx.fillStyle = '#e94560'; // Red head
+                    segmentColor = '#e94560'; // Head color
                 } else {
-                    // Fading green effect
-                    const greenValue = Math.max(60, 200 - (index * 8)); // Adjusted fade
-                    ctx.fillStyle = `rgb(78, ${greenValue}, 163)`; // Greenish-blue body
+                    // Fading green effect for body
+                    const greenValue = Math.max(60, 200 - (index * 8));
+                    segmentColor = `rgb(78, ${greenValue}, 163)`;
                 }
-                roundRect(ctx, pixelX, pixelY, gridSize - 1, gridSize - 1, 5, true);
+                ctx.fillStyle = segmentColor;
+                roundRect(ctx, pixelX + 1, pixelY + 1, gridSize - 2, gridSize - 2, 5, true); // Slightly inset
 
-                if (index === 0) { // Draw eyes only on the head
-                    drawEyes(segment, pixelX, pixelY);
+                // Draw eyes on the head segment
+                if (index === 0) {
+                    drawEyes(pixelX, pixelY);
                 }
             });
 
-            // Draw food (simple circle)
-            ctx.fillStyle = '#4ecca3'; // Green for food
-             ctx.beginPath();
-             const centerX = food.x * gridSize + gridSize / 2;
-             const centerY = food.y * gridSize + gridSize / 2;
-             const radius = gridSize / 2 - 2; // Slightly smaller radius
-             roundRect(ctx, food.x * gridSize + 2 , food.y * gridSize + 2, gridSize - 4, gridSize - 4, 3, true); // Rounded square food
-            // Shine effect
-             ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
-             ctx.beginPath();
-             ctx.arc(centerX - radius / 3, centerY - radius / 3, radius / 4, 0, Math.PI * 2);
-             ctx.fill();
+            // Draw food
+            ctx.fillStyle = '#4ecca3'; // Food color
+            const foodRadius = gridSize / 2 - 2;
+            const foodCenterX = food.x * gridSize + gridSize / 2;
+            const foodCenterY = food.y * gridSize + gridSize / 2;
+            roundRect(ctx, food.x * gridSize + 2, food.y * gridSize + 2, gridSize - 4, gridSize - 4, 3, true); // Rounded square food
+
+            // Simple shine effect on food
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
+            ctx.beginPath();
+            ctx.arc(foodCenterX - foodRadius / 3, foodCenterY - foodRadius / 3, foodRadius / 4, 0, Math.PI * 2);
+            ctx.fill();
         }
 
-        function drawEyes(segment, pixelX, pixelY) {
-             ctx.fillStyle = 'white';
-             const eyeSize = gridSize / 5; // Slightly larger eye background
+        function drawEyes(pixelX, pixelY) {
+             ctx.fillStyle = 'white'; // Eye background
+             const eyeSize = gridSize / 5;
              const pupilSize = gridSize / 8;
              const eyeOffsetX = gridSize / 4;
              const eyeOffsetY = gridSize / 4;
@@ -585,66 +594,45 @@
              let eye1X, eye1Y, eye2X, eye2Y;
              let pupil1OffsetX = 0, pupil1OffsetY = 0, pupil2OffsetX = 0, pupil2OffsetY = 0;
 
-             // Basic eye positioning based on direction
-            switch (direction) {
+             // Position eyes based on snake direction
+             switch (direction) {
                  case 'up':
-                     eye1X = pixelX + eyeOffsetX;
-                     eye1Y = pixelY + eyeOffsetY;
-                     eye2X = pixelX + gridSize - eyeOffsetX - eyeSize;
-                     eye2Y = pixelY + eyeOffsetY;
-                     pupil1OffsetY = -pupilSize / 3; // Look slightly up
-                     pupil2OffsetY = -pupilSize / 3;
+                     eye1X = pixelX + eyeOffsetX; eye1Y = pixelY + eyeOffsetY;
+                     eye2X = pixelX + gridSize - eyeOffsetX - eyeSize; eye2Y = pixelY + eyeOffsetY;
+                     pupil1OffsetY = -pupilSize / 3; pupil2OffsetY = -pupilSize / 3; // Look up
                      break;
                  case 'down':
-                     eye1X = pixelX + eyeOffsetX;
-                     eye1Y = pixelY + gridSize - eyeOffsetY - eyeSize;
-                     eye2X = pixelX + gridSize - eyeOffsetX - eyeSize;
-                     eye2Y = pixelY + gridSize - eyeOffsetY - eyeSize;
-                     pupil1OffsetY = pupilSize / 3; // Look slightly down
-                     pupil2OffsetY = pupilSize / 3;
+                     eye1X = pixelX + eyeOffsetX; eye1Y = pixelY + gridSize - eyeOffsetY - eyeSize;
+                     eye2X = pixelX + gridSize - eyeOffsetX - eyeSize; eye2Y = pixelY + gridSize - eyeOffsetY - eyeSize;
+                     pupil1OffsetY = pupilSize / 3; pupil2OffsetY = pupilSize / 3; // Look down
                      break;
                  case 'left':
-                     eye1X = pixelX + eyeOffsetX;
-                     eye1Y = pixelY + eyeOffsetY;
-                     eye2X = pixelX + eyeOffsetX;
-                     eye2Y = pixelY + gridSize - eyeOffsetY - eyeSize;
-                     pupil1OffsetX = -pupilSize / 3; // Look slightly left
-                     pupil2OffsetX = -pupilSize / 3;
+                     eye1X = pixelX + eyeOffsetX; eye1Y = pixelY + eyeOffsetY;
+                     eye2X = pixelX + eyeOffsetX; eye2Y = pixelY + gridSize - eyeOffsetY - eyeSize;
+                     pupil1OffsetX = -pupilSize / 3; pupil2OffsetX = -pupilSize / 3; // Look left
                      break;
                  case 'right':
-                 default: // Default to right
-                     eye1X = pixelX + gridSize - eyeOffsetX - eyeSize;
-                     eye1Y = pixelY + eyeOffsetY;
-                     eye2X = pixelX + gridSize - eyeOffsetX - eyeSize;
-                     eye2Y = pixelY + gridSize - eyeOffsetY - eyeSize;
-                     pupil1OffsetX = pupilSize / 3; // Look slightly right
-                     pupil2OffsetX = pupilSize / 3;
+                 default:
+                     eye1X = pixelX + gridSize - eyeOffsetX - eyeSize; eye1Y = pixelY + eyeOffsetY;
+                     eye2X = pixelX + gridSize - eyeOffsetX - eyeSize; eye2Y = pixelY + gridSize - eyeOffsetY - eyeSize;
+                     pupil1OffsetX = pupilSize / 3; pupil2OffsetX = pupilSize / 3; // Look right
                      break;
              }
 
-             // Draw white part
-             ctx.beginPath();
-             ctx.arc(eye1X + eyeSize / 2, eye1Y + eyeSize / 2, eyeSize / 2, 0, Math.PI * 2);
-             ctx.fill();
-             ctx.beginPath();
-             ctx.arc(eye2X + eyeSize / 2, eye2Y + eyeSize / 2, eyeSize / 2, 0, Math.PI * 2);
-             ctx.fill();
+             // Draw white part (sclera)
+             ctx.beginPath(); ctx.arc(eye1X + eyeSize / 2, eye1Y + eyeSize / 2, eyeSize / 2, 0, Math.PI * 2); ctx.fill();
+             ctx.beginPath(); ctx.arc(eye2X + eyeSize / 2, eye2Y + eyeSize / 2, eyeSize / 2, 0, Math.PI * 2); ctx.fill();
 
-             // Draw pupil
+             // Draw black part (pupil)
              ctx.fillStyle = 'black';
-             ctx.beginPath();
-             ctx.arc(eye1X + eyeSize / 2 + pupil1OffsetX, eye1Y + eyeSize / 2 + pupil1OffsetY, pupilSize / 2, 0, Math.PI * 2);
-             ctx.fill();
-             ctx.beginPath();
-             ctx.arc(eye2X + eyeSize / 2 + pupil2OffsetX, eye2Y + eyeSize / 2 + pupil2OffsetY, pupilSize / 2, 0, Math.PI * 2);
-             ctx.fill();
+             ctx.beginPath(); ctx.arc(eye1X + eyeSize / 2 + pupil1OffsetX, eye1Y + eyeSize / 2 + pupil1OffsetY, pupilSize / 2, 0, Math.PI * 2); ctx.fill();
+             ctx.beginPath(); ctx.arc(eye2X + eyeSize / 2 + pupil2OffsetX, eye2Y + eyeSize / 2 + pupil2OffsetY, pupilSize / 2, 0, Math.PI * 2); ctx.fill();
         }
 
-
-        // Helper for rounded rectangles (used for snake, could be for food too)
+        // Helper for rounded rectangles
         function roundRect(ctx, x, y, width, height, radius, fill) {
             if (typeof radius === 'undefined') radius = 5;
-            radius = Math.min(radius, width / 2, height / 2); // Prevent radius too large
+            radius = Math.min(radius, width / 2, height / 2);
             ctx.beginPath();
             ctx.moveTo(x + radius, y);
             ctx.lineTo(x + width - radius, y);
@@ -656,26 +644,23 @@
             ctx.lineTo(x, y + radius);
             ctx.quadraticCurveTo(x, y, x + radius, y);
             ctx.closePath();
-            if (fill) ctx.fill();
-            else ctx.stroke();
+            if (fill) ctx.fill(); else ctx.stroke();
         }
 
         // --- Movement and Logic ---
          function updateDirection() {
+             // Applies the buffered `nextDirection` if it's valid (not opposite)
              const opposite = { 'up': 'down', 'down': 'up', 'left': 'right', 'right': 'left' };
-             // Update direction only if the next direction is valid (not opposite)
              if (nextDirection !== direction && nextDirection !== opposite[direction]) {
                  direction = nextDirection;
              }
-             // If nextDirection was the same or opposite, it keeps the current direction.
-             // Reset nextDirection to current direction to avoid accidental double turns if input is held?
-             // Let's not do this - allows buffered input. The changingDirection flag handles the tick-lock.
+             // `nextDirection` remains until changed by new input
          }
 
         function moveSnake() {
-            const head = { x: snake[0].x, y: snake[0].y };
+            const head = { x: snake[0].x, y: snake[0].y }; // Copy current head position
 
-            // Calculate new head position based on current direction
+            // Calculate new head position based on current `direction`
             switch (direction) {
                 case 'up': head.y--; break;
                 case 'down': head.y++; break;
@@ -683,81 +668,77 @@
                 case 'right': head.x++; break;
             }
 
-             // Check for collisions BEFORE adding the new head
+             // Check for collisions (wall or self) with the *new* head position
              if (checkCollision(head)) {
-                 isGameOver = true;
-                 return; // Stop moving if collision detected
+                 isGameOver = true; // Set flag if collision detected
+                 return; // Stop further processing for this tick
              }
 
-            // No collision, add the new head
+            // No collision: Add the new head to the front of the snake array
             snake.unshift(head);
 
-             // Check if food was eaten AT the new head position
+             // Check if the new head position is where the food is
              const ateFood = head.x === food.x && head.y === food.y;
              if (ateFood) {
-                 // Food eaten: Increase score, generate new food, increase speed
-                 score += 10;
-                 scoreElement.textContent = score;
-                 food = generateFoodLocation(); // Generate new food immediately
-                 increaseSpeed();
-                 // Don't remove the tail, snake grows
+                 score += 10;                 // Increase score
+                 scoreElement.textContent = score; // Update display
+                 food = generateFoodLocation(); // Place new food
+                 increaseSpeed();             // Increase game speed
+                 // Don't pop the tail - snake grows
              } else {
-                 // Food not eaten: Remove the tail segment
-                 snake.pop();
+                 snake.pop(); // Remove the last segment (tail) if no food eaten
              }
         }
 
         function checkCollision(head) {
-            // Wall collision
+            // Wall collision check
             if (head.x < 0 || head.x >= gridWidth || head.y < 0 || head.y >= gridHeight) {
-                console.log("Wall collision");
                 return true;
             }
-            // Self collision (check against segments from index 1 onwards)
+            // Self collision check (iterate through body segments)
             for (let i = 1; i < snake.length; i++) {
                 if (head.x === snake[i].x && head.y === snake[i].y) {
-                    console.log("Self collision");
                     return true;
                 }
             }
-            // No collision
-            return false;
+            return false; // No collision
         }
-
-        function checkFoodCollision() {
-            // This is now handled within moveSnake() after the head moves.
-            // This function can be removed or kept empty if needed elsewhere later.
-        }
-
 
         function generateFoodLocation() {
             let newFoodPos;
             let attempts = 0;
-            const maxAttempts = gridWidth * gridHeight; // Prevent infinite loop in edge case (full grid)
+            const maxAttempts = gridWidth * gridHeight * 0.5; // Safety limit
             do {
                 newFoodPos = {
                     x: Math.floor(Math.random() * gridWidth),
                     y: Math.floor(Math.random() * gridHeight)
                 };
                 attempts++;
+                 // Keep trying if the location is on any part of the snake
             } while (isLocationOnSnake(newFoodPos) && attempts < maxAttempts);
 
-            // If maxAttempts reached (unlikely), place it at 0,0 - game might end soon anyway
-            if(attempts >= maxAttempts) {
-                console.warn("Could not find empty spot for food, placing at 0,0");
-                return {x: 0, y: 0};
+            if(attempts >= maxAttempts) { // Extremely unlikely unless grid is nearly full
+                console.warn("Could not find empty spot for food easily.");
+                 // Fallback: find the first available spot (can be slow if grid is full)
+                 for (let x = 0; x < gridWidth; x++) {
+                    for (let y = 0; y < gridHeight; y++) {
+                         if (!isLocationOnSnake({x, y})) return {x, y};
+                    }
+                 }
+                 return {x: 0, y: 0}; // Absolute fallback
             }
             return newFoodPos;
         }
 
         function isLocationOnSnake(pos) {
+            // Check if the given position matches any snake segment's position
             return snake.some(segment => segment.x === pos.x && segment.y === pos.y);
         }
 
         function increaseSpeed() {
+            // Decrease the timeout delay, making the game faster
             if (gameSpeed > minSpeed) {
                 gameSpeed = Math.max(minSpeed, gameSpeed - speedDecrement);
-                // console.log("New game speed:", gameSpeed); // Optional: for debugging speed changes
             }
         }
 
@@ -765,39 +746,39 @@
 
         // Helper to attempt setting the next direction
         function trySetDirection(newDirection) {
+             // Ignore input if game isn't running or if a direction change is already locked for this tick
             if (!isGameStarted || isGameOver || changingDirection) {
-                return false; // Ignore input if game not running or already changed this tick
+                return false;
             }
 
             const opposite = { 'up': 'down', 'down': 'up', 'left': 'right', 'right': 'left' };
 
-            // Allow change only if it's not the current direction or the opposite direction
+             // Allow change only if it's not the current direction AND not the opposite direction
+             // Prevents reversing direction into self and redundant inputs
             if (newDirection !== direction && newDirection !== opposite[direction]) {
-                nextDirection = newDirection;
-                changingDirection = true; // Lock direction change for this tick
-                // console.log("Next direction set to:", newDirection); // Debugging
-                return true; // Direction change was accepted
+                nextDirection = newDirection; // Buffer the new direction
+                changingDirection = true;   // Lock input for this tick
+                return true; // Input accepted
             }
-            // console.log("Direction change ignored:", newDirection, "Current:", direction); // Debugging
-            return false; // Direction change was ignored
+            return false; // Input ignored (same or opposite direction)
         }
 
         // Keyboard Input
         function handleKeyPress(event) {
             const key = event.key;
 
-            // Start/Restart Game with Enter
+            // Start/Restart Game with Enter key
             if (key === 'Enter') {
-                 // Allow Enter for restart on game over screen, OR
-                 // Allow Enter for initial start ONLY IF NOT mobile (mobile uses button)
+                 // Allow Enter for restart on game over screen
+                 // Allow Enter for initial start ONLY if NOT mobile (mobile uses button)
                  if (gameOverOverlay.style.display === 'flex' || (!isGameStarted && !isMobile)) {
-                    event.preventDefault(); // Prevent potential form submission if inside one
-                    initGame();
+                    event.preventDefault(); // Prevent default browser action (like form submit)
+                    initGame(); // Start or restart the game
                     return;
                  }
             }
 
-            // Directional Input during gameplay
+            // Directional Input during gameplay (Arrows or WASD)
             if (isGameStarted && !isGameOver) {
                 let directionAttempted = null;
                 if (key === 'ArrowUp' || key.toLowerCase() === 'w') directionAttempted = 'up';
@@ -806,8 +787,9 @@
                 else if (key === 'ArrowRight' || key.toLowerCase() === 'd') directionAttempted = 'right';
 
                 if (directionAttempted) {
+                    // Try setting the direction and prevent default page scroll if successful
                     if(trySetDirection(directionAttempted)) {
-                        event.preventDefault(); // Prevent page scrolling with arrow keys
+                        event.preventDefault();
                     }
                 }
             }
@@ -817,36 +799,32 @@
         function handleTouchStart(event) {
             // Only process swipes if game is active AND swipe controls are selected
             if (isGameStarted && !isGameOver && isMobile && mobileControlPreference === 'swipe') {
-                // Don't preventDefault here, allow potential scrolling on overlays if needed later.
-                // Or preventDefault only if touch is on canvas? For now, let move handle it.
                 const firstTouch = event.touches[0];
                 touchStartX = firstTouch.clientX;
                 touchStartY = firstTouch.clientY;
-                touchEndX = firstTouch.clientX; // Initialize end points
-                touchEndY = firstTouch.clientY;
+                touchEndX = touchStartX; // Initialize end points
+                touchEndY = touchStartY;
             } else {
-                // Reset points if swipe isn't active for this touch
-                touchStartX = 0;
-                touchStartY = 0;
+                touchStartX = 0; touchStartY = 0; // Reset if not applicable
             }
         }
 
         function handleTouchMove(event) {
-             // Prevent scrolling DURING a swipe only if swipe is active and game running
+             // Prevent scrolling DURING a swipe only if swipe is active, game running, and swipe started
              if (isGameStarted && !isGameOver && isMobile && mobileControlPreference === 'swipe' && touchStartX !== 0) {
-                 event.preventDefault(); // Prevent scroll/refresh
+                 // Check if the touch target is the canvas or tap controls to be more specific?
+                 // For now, prevent scroll broadly during active swipe.
+                 event.preventDefault();
                  const touch = event.touches[0];
                  touchEndX = touch.clientX;
                  touchEndY = touch.clientY;
              }
         }
 
-
         function handleTouchEnd(event) {
-            // Only process swipes if game is active AND swipe controls are selected AND a swipe started
+            // Process swipe end only if applicable
             if (isGameStarted && !isGameOver && isMobile && mobileControlPreference === 'swipe' && touchStartX !== 0) {
-
-                 // Use changedTouches for the final position
+                 // Use changedTouches for the final position of the finger that lifted
                  const touch = event.changedTouches[0];
                  touchEndX = touch.clientX;
                  touchEndY = touch.clientY;
@@ -854,26 +832,26 @@
                 const deltaX = touchEndX - touchStartX;
                 const deltaY = touchEndY - touchStartY;
 
-                // Determine swipe direction only if distance is significant
+                // Check if swipe distance is significant enough
                 if (Math.abs(deltaX) > minSwipeDistance || Math.abs(deltaY) > minSwipeDistance) {
-                    if (Math.abs(deltaX) > Math.abs(deltaY)) { // Horizontal swipe
+                    // Determine dominant direction (horizontal vs vertical)
+                    if (Math.abs(deltaX) > Math.abs(deltaY)) {
                         trySetDirection(deltaX > 0 ? 'right' : 'left');
-                    } else { // Vertical swipe
+                    } else {
                         trySetDirection(deltaY > 0 ? 'down' : 'up'); // Y increases downwards
                     }
                 }
-                // Reset coordinates after processing swipe
+                // Reset coordinates for the next potential swipe
                 touchStartX = 0;
                 touchStartY = 0;
             }
-            // Do not prevent default on touchend generally
         }
 
         // --- Tap Control Button Handling ---
         function handleTapButtonClick(event) {
-            if (!isGameStarted || isGameOver) return; // Ignore clicks if game not running
+            if (!isGameStarted || isGameOver) return; // Ignore taps if game not running
 
-            const buttonId = event.currentTarget.id; // Use currentTarget in case of nested elements later
+            const buttonId = event.currentTarget.id;
             let directionAttempted = null;
 
             switch (buttonId) {
@@ -884,17 +862,15 @@
             }
 
             if (directionAttempted) {
-                trySetDirection(directionAttempted);
+                trySetDirection(directionAttempted); // Attempt to set the direction
             }
         }
-
 
         // --- High Score Logic ---
         function loadHighScores() {
             const storedLifetimeScore = localStorage.getItem(LIFETIME_HS_KEY);
             lifetimeHighScore = storedLifetimeScore ? parseInt(storedLifetimeScore, 10) : 0;
-            // Session high score resets each time the page loads
-            sessionHighScore = 0;
+            sessionHighScore = 0; // Reset session score on load
             updateHighScoreDisplay();
         }
 
@@ -909,26 +885,23 @@
 
         // --- Game Over ---
         function showGameOver() {
-            clearTimeout(gameLoopTimeout); // Stop the game loop
-            isGameOver = true; // Set game over flag
-            isGameStarted = false; // Mark game as not actively running
+            clearTimeout(gameLoopTimeout); // Stop game loop
+            isGameOver = true;
+            isGameStarted = false;
 
-            // Hide tap controls if they were visible
-            tapControlsContainer.style.display = 'none';
+            tapControlsContainer.style.display = 'none'; // Hide tap controls on game over
 
-            // Update high scores
-            if (score > sessionHighScore) {
-                sessionHighScore = score;
-            }
+            // Update and save high scores
+            if (score > sessionHighScore) sessionHighScore = score;
             if (score > lifetimeHighScore) {
                 lifetimeHighScore = score;
                 saveLifetimeHighScore();
             }
 
-            // Update display
+            // Update UI for game over
             updateHighScoreDisplay();
             finalScoreElement.textContent = score;
-            gameOverOverlay.style.display = 'flex'; // Show the overlay
+            gameOverOverlay.style.display = 'flex';
         }
 
         // --- Mobile Control Preference Logic ---
@@ -936,9 +909,9 @@
              const pref = localStorage.getItem(MOBILE_CONTROL_PREF_KEY);
              if (pref === 'swipe' || pref === 'tap') {
                  mobileControlPreference = pref;
-                 return true;
+                 return true; // Preference loaded
              }
-             return false;
+             return false; // No preference found or invalid
         }
 
         function saveMobilePreference(pref) {
@@ -949,15 +922,17 @@
         }
 
         function setupMobileControls() {
+            // Show mobile-specific UI elements
             mobileControlSelection.style.display = 'block';
             document.querySelector('.desktop-instructions').style.display = 'none';
             document.querySelector('.mobile-instructions').style.display = 'inline';
             document.querySelector('.desktop-start').style.display = 'none';
             document.querySelector('.mobile-start').style.display = 'inline';
 
-            const hasPreference = loadMobilePreference();
+            const hasPreference = loadMobilePreference(); // Load saved pref
 
             if (hasPreference) {
+                // Set button active state based on loaded preference
                 if (mobileControlPreference === 'swipe') {
                     selectSwipeButton.classList.add('active');
                     selectTapButton.classList.remove('active');
@@ -965,37 +940,39 @@
                     selectTapButton.classList.add('active');
                     selectSwipeButton.classList.remove('active');
                 }
-                startButton.disabled = false; // Enable start if preference loaded
+                startButton.disabled = false; // Enable start button immediately
             } else {
-                 startButton.disabled = true; // Disable start until selection
+                 startButton.disabled = true; // Require selection before starting
             }
 
+            // Add listeners to selection buttons
             selectSwipeButton.addEventListener('click', () => {
                 saveMobilePreference('swipe');
                 selectSwipeButton.classList.add('active');
                 selectTapButton.classList.remove('active');
-                startButton.disabled = false;
+                startButton.disabled = false; // Enable start button
             });
 
             selectTapButton.addEventListener('click', () => {
                 saveMobilePreference('tap');
                 selectTapButton.classList.add('active');
                 selectSwipeButton.classList.remove('active');
-                startButton.disabled = false;
+                startButton.disabled = false; // Enable start button
             });
         }
 
         // --- Event Listeners ---
         document.addEventListener('keydown', handleKeyPress);
-        startButton.addEventListener('click', initGame); // Start game button
-        restartButton.addEventListener('click', initGame); // Restart button on game over screen
+        startButton.addEventListener('click', initGame);
+        restartButton.addEventListener('click', initGame);
 
-        // Touch listeners (for swipe detection) - add passive: false ONLY if preventDefault is needed inside
-        document.addEventListener('touchstart', handleTouchStart, { passive: true }); // Passive true initially
-        document.addEventListener('touchmove', handleTouchMove, { passive: false }); // Passive false IF preventDefault IS CALLED
+        // Touch listeners for SWIPE controls
+        // Passive: true where possible to improve scroll performance if default isn't prevented
+        document.addEventListener('touchstart', handleTouchStart, { passive: true });
+        document.addEventListener('touchmove', handleTouchMove, { passive: false }); // Need false because we call preventDefault
         document.addEventListener('touchend', handleTouchEnd, { passive: true });
 
-         // Tap control button listeners
+         // Listeners for TAP control buttons
          tapUpButton.addEventListener('click', handleTapButtonClick);
          tapDownButton.addEventListener('click', handleTapButtonClick);
          tapLeftButton.addEventListener('click', handleTapButtonClick);
@@ -1006,26 +983,27 @@
         window.onload = () => {
             isGameStarted = false;
             isGameOver = false;
-            isMobile = isMobileDevice(); // Detect mobile status
+            isMobile = isMobileDevice(); // Check if mobile
 
-            loadHighScores(); // Load scores regardless of device
+            loadHighScores(); // Always load scores
 
             if (isMobile) {
-                setupMobileControls(); // Setup selection UI if mobile
+                setupMobileControls(); // Show mobile control selection
             } else {
-                // Desktop setup: hide mobile specific things, enable start button
+                // Desktop setup: Hide mobile things, show desktop text, enable start
                 mobileControlSelection.style.display = 'none';
                 document.querySelector('.mobile-instructions').style.display = 'none';
-                 document.querySelector('.mobile-start').style.display = 'none';
+                document.querySelector('.mobile-start').style.display = 'none';
                 document.querySelector('.desktop-instructions').style.display = 'block';
-                 document.querySelector('.desktop-start').style.display = 'inline';
+                document.querySelector('.desktop-start').style.display = 'inline';
                 startButton.disabled = false;
             }
 
-            startScreen.style.display = 'flex'; // Show start screen
+            // Initial UI state
+            startScreen.style.display = 'flex';
             gameOverOverlay.style.display = 'none';
-            tapControlsContainer.style.display = 'none'; // Ensure tap controls are hidden initially
-            clearCanvas(); // Draw initial empty canvas background
+            tapControlsContainer.style.display = 'none'; // Ensure tap controls hidden at start
+            clearCanvas(); // Draw initial background
         };
 
     </script>
